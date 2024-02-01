@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pl.kurs.librarybooks.command.CreateBookCommand;
 import pl.kurs.librarybooks.command.UpdateBookCommand;
@@ -23,6 +24,7 @@ public class BookController {
     private BookManagementService bookManagementService;
     private ModelMapper modelMapper;
 
+//    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<BookDTO> addBook(@RequestBody CreateBookCommand command){
         Book bookForSave = modelMapper.map(command, Book.class);
@@ -66,7 +68,7 @@ public class BookController {
             bookToBorrow.setBorrowed(true);
             bookToBorrow.setStudentId(idStudent);
             bookToBorrow.setBorrowDate(LocalDate.now());
-            bookToBorrow = bookManagementService.edit(bookToBorrow);
+            bookManagementService.edit(bookToBorrow);
             return ResponseEntity.ok(new StatusDTO("The book with id:" + idBook + " was borrowed to a student with id:" + idStudent));
         } else return ResponseEntity.status(HttpStatus.CONFLICT).body(new StatusDTO("The book with id:" + idBook + " is already borrowed"));
     }
