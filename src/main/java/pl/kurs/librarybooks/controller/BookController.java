@@ -20,9 +20,7 @@ import java.util.List;
 @RequestMapping("/books")
 @AllArgsConstructor
 public class BookController {
-    private BookManagementService bookManagementService;
     private BookControllerService bookControllerService;
-    private ModelMapper modelMapper;
 
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('ADMIN')")
