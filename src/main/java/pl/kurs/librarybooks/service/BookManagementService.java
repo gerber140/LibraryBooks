@@ -22,7 +22,8 @@ public class BookManagementService extends GenericManagementService<Book, BookRe
             return repository.isBookBorrowed(id);
     }
 
-    public long getBorrowedDays(LocalDate borrowDate){
+    public long getBorrowedDays(Book book){
+        LocalDate borrowDate = book.getBorrowDate();
         Period period = Period.between(borrowDate, LocalDate.now());
         return period.getDays();
     }
