@@ -2,10 +2,8 @@ package pl.kurs.librarybooks.service;
 
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import pl.kurs.librarybooks.command.CreateBookCommand;
 import pl.kurs.librarybooks.command.UpdateBookCommand;
 import pl.kurs.librarybooks.dto.BookDTO;
@@ -34,11 +32,17 @@ public class BookControllerService {
         return modelMapper.map(bookManagementService.get(id), GetBookDTO.class);
     }
 
+    public List<GetBookDTO> getBooks(int page, int size) {
+        Page<Book> booksPage = bookManagementService.getAll(page, size);
+        List<Book> booksList = booksPage.getContent();
+        return booksList.stream().map(x -> modelMapper.map(x, GetBookDTO.class)).collect(Collectors.toList());
+    }
+
+
     public List<GetBookDTO> getBooks() {
-        List<GetBookDTO> response = bookManagementService.getAll().stream()
+        return bookManagementService.getAll().stream()
                 .map(x -> modelMapper.map(x, GetBookDTO.class))
                 .collect(Collectors.toList());
-        return response;
     }
 
     public GetBookDTO updateBook(UpdateBookCommand command) {

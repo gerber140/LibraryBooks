@@ -1,10 +1,15 @@
 package pl.kurs.librarybooks.service;
 
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import pl.kurs.librarybooks.exceptions.EntityNotFoundException;
 import pl.kurs.librarybooks.exceptions.InvalidEntityException;
 import pl.kurs.librarybooks.exceptions.InvalidIdException;
+import pl.kurs.librarybooks.model.Book;
 
 import java.util.List;
 import java.util.Objects;
@@ -49,4 +54,11 @@ public abstract class GenericManagementService<T extends Identificationable, R e
     public List<T> getAll() {
         return repository.findAll();
     }
+
+
+    public Page<T> getAll(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        return repository.findAll(pageable);
+    }
+
 }
