@@ -1,4 +1,4 @@
-package pl.kurs.librarybooks;
+package pl.kurs.librarybooks.querydsl;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberPath;

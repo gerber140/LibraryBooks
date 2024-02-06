@@ -1,4 +1,4 @@
-package pl.kurs.librarybooks;
+package pl.kurs.librarybooks.querydsl;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

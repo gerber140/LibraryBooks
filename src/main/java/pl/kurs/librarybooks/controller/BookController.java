@@ -1,32 +1,23 @@
 package pl.kurs.librarybooks.controller;
 
-import com.querydsl.core.types.dsl.BooleanExpression;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
-import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import pl.kurs.librarybooks.BookPredicatesBuilder;
 import pl.kurs.librarybooks.command.CreateBookCommand;
 import pl.kurs.librarybooks.command.UpdateBookCommand;
 import pl.kurs.librarybooks.dto.BookDTO;
 import pl.kurs.librarybooks.dto.GetBookDTO;
 import pl.kurs.librarybooks.dto.StatusDTO;
-import pl.kurs.librarybooks.model.Book;
-import pl.kurs.librarybooks.repository.BookRepository;
 import pl.kurs.librarybooks.service.BookControllerService;
-import pl.kurs.librarybooks.service.BookManagementService;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/books")
@@ -34,20 +25,13 @@ import java.util.regex.Pattern;
 public class BookController {
     private BookControllerService bookControllerService;
 
-    @GetMapping( value = "/getBooks")
-    public Iterable<Book> search(@RequestParam(value = "search") String search) {
-        BookPredicatesBuilder builder = new BookPredicatesBuilder();
-
-        if (search != null) {
-            Pattern pattern = Pattern.compile("(\w+?)(:|<|>)(\w+?),");
-            Matcher matcher = pattern.matcher(search + ",");
-            while (matcher.find()) {
-                builder.with(matcher.group(1), matcher.group(2), matcher.group(3));
-            }
-        }
-        BooleanExpression exp = builder.build();
-        return BookRepository.findAll(exp);
+    @GetMapping("/getBooks")
+    @ResponseBody
+    @Operation(summary = "Search books based on criteria")
+    public ResponseEntity<List<GetBookDTO>> search(@RequestParam(value = "search") String search) {
+        return ResponseEntity.ok(bookControllerService.search(search));
     }
+
 
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('ADMIN')")
