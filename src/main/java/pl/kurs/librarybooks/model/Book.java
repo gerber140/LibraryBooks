@@ -2,6 +2,7 @@ package pl.kurs.librarybooks.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -16,6 +17,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class Book implements Serializable, Identificationable {
     @Serial
     private static final long serialVersionUID = 1L;

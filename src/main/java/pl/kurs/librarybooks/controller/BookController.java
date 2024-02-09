@@ -25,65 +25,77 @@ import java.util.List;
 public class BookController {
     private BookControllerService bookControllerService;
 
-    @GetMapping("/getBooks")
-    @ResponseBody
-    @Operation(summary = "Search books based on criteria")
-    public ResponseEntity<List<GetBookDTO>> search(@RequestParam(value = "search") String search) {
-        return ResponseEntity.ok(bookControllerService.search(search));
-    }
-
-
     @PostMapping("/add")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "endpoint to add Book")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Book created successfully", content =
-                    {@Content(mediaType = "application/json", schema =
-                    @Schema(implementation = BookDTO.class))})
+            @ApiResponse(responseCode = "201", description = "Book created successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+            @ApiResponse(responseCode = "404", description = "Cannot create the book")
     })
     public ResponseEntity<BookDTO> addBook(@RequestBody CreateBookCommand command) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookControllerService.addBook(command));
     }
 
+    @GetMapping("/get")
+    @Operation(summary = "endpoint to get books")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Books found Successfully"),
+            @ApiResponse(responseCode = "404", description = "Books not found")
+    })
+    public ResponseEntity<List<GetBookDTO>> getBooks(
+            @RequestParam(value = "pageNo", defaultValue = "0", required = false) int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10", required = false) int pageSize,
+            @RequestParam(value = "value", defaultValue = "id", required = false) String value)
+    {
+        return ResponseEntity.ok(bookControllerService.getBooks(pageNo, pageSize, value));
+    }
+
     @GetMapping("/getBook/{id}")
-    @Operation(summary = "endpoint to get Book by id")
+    @Operation(summary = "endpoint to get book by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Book found successfully"),
+            @ApiResponse(responseCode = "404", description = "Book not found")
+    })
     public ResponseEntity<GetBookDTO> getBookById(@PathVariable("id") long id) {
         return ResponseEntity.ok(bookControllerService.getBook(id));
-    }
-
-    @GetMapping("/getBooks/pageNo/{pageNo}/pageSize/{pageSize}")
-    public ResponseEntity<List<GetBookDTO>> getBooks(@PathVariable("pageNo") int pageNo, @PathVariable("pageSize") int pageSize) {
-        return ResponseEntity.ok(bookControllerService.getBooks(pageNo, pageSize));
-    }
-
-
-    @GetMapping
-    @Operation(summary = "endpoint to get all Books")
-    public ResponseEntity<List<GetBookDTO>> getBooks() {
-        return ResponseEntity.ok(bookControllerService.getBooks());
-    }
-
-
-    @PutMapping
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "endpoint to update Book")
-    public ResponseEntity<GetBookDTO> updateBookById(@RequestBody UpdateBookCommand command) {
-        return ResponseEntity.ok(bookControllerService.updateBook(command));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "endpoint to delete Book")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+            @ApiResponse(responseCode = "404", description = "Cannot create the book")
+    })
     public ResponseEntity<StatusDTO> deleteBookById(@PathVariable("id") long id) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(bookControllerService.deleteBook(id));
     }
 
     @PutMapping("/borrowBook/{id_b}/toStudent/{id_s}")
     @Operation(summary = "endpoint to borrow Book to a student")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book borrowed successfully"),
+            @ApiResponse(responseCode = "404", description = "Cannot borrow the book")
+    })
     public ResponseEntity<StatusDTO> borrowBook(@PathVariable("id_b") long idBook, @PathVariable("id_s") long idStudent) {
         if (!bookControllerService.isBookBorrowed(idBook)) {
             return ResponseEntity.ok(bookControllerService.borrowBook(idBook, idStudent));
         } else
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new StatusDTO("The book with id:" + idBook + " is already borrowed"));
+    }
+
+
+    @PutMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "endpoint to update Book")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book updated successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+            @ApiResponse(responseCode = "404", description = "Book not updated")
+    })
+    public ResponseEntity<GetBookDTO> updateBookById(@RequestBody UpdateBookCommand command) {
+        return ResponseEntity.ok(bookControllerService.updateBook(command));
     }
 }

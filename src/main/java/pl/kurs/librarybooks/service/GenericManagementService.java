@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import pl.kurs.librarybooks.exceptions.EntityNotFoundException;
 import pl.kurs.librarybooks.exceptions.InvalidEntityException;
@@ -49,13 +50,8 @@ public abstract class GenericManagementService<T extends Identificationable, R e
     }
 
     @Override
-    public List<T> getAll() {
-        return repository.findAll();
-    }
-
-
-    public Page<T> getAll(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+    public Page<T> getAll(int pageNumber, int pageSize, String value) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(value));
         return repository.findAll(pageable);
     }
 

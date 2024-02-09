@@ -21,17 +21,6 @@ public class BookControllerService {
     private BookManagementService bookManagementService;
     private ModelMapper modelMapper;
 
-
-    public List<GetBookDTO> search(String search) {
-        List<Book> bookList = bookManagementService.search(search);
-        return bookList.stream().map(book -> modelMapper.map(book, GetBookDTO.class)).collect(Collectors.toList());
-    }
-
-
-
-
-
-
     public BookDTO addBook(CreateBookCommand command) {
         Book bookForSave = modelMapper.map(command, Book.class);
         bookForSave.setBorrowed(false);
@@ -43,17 +32,10 @@ public class BookControllerService {
         return modelMapper.map(bookManagementService.get(id), GetBookDTO.class);
     }
 
-    public List<GetBookDTO> getBooks(int page, int size) {
-        Page<Book> booksPage = bookManagementService.getAll(page, size);
+    public List<GetBookDTO> getBooks(int page, int size, String value) {
+        Page<Book> booksPage = bookManagementService.getAll(page, size, value);
         List<Book> booksList = booksPage.getContent();
         return booksList.stream().map(x -> modelMapper.map(x, GetBookDTO.class)).collect(Collectors.toList());
-    }
-
-
-    public List<GetBookDTO> getBooks() {
-        return bookManagementService.getAll().stream()
-                .map(x -> modelMapper.map(x, GetBookDTO.class))
-                .collect(Collectors.toList());
     }
 
     public GetBookDTO updateBook(UpdateBookCommand command) {

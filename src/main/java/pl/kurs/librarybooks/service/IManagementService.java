@@ -1,5 +1,7 @@
 package pl.kurs.librarybooks.service;
 
+import org.springframework.data.domain.Page;
+
 import java.util.List;
 
 public interface IManagementService<T> {
@@ -7,6 +9,6 @@ public interface IManagementService<T> {
     T get(Long id);
     T edit(T entity);
     void delete(Long id);
-    List<T> getAll();
+    Page<T> getAll(int pageNumber, int pageSize, String value);
 
 }
