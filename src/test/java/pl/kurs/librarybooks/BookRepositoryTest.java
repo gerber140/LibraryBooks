@@ -1,5 +1,6 @@
 package pl.kurs.librarybooks;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -9,6 +10,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.test.web.servlet.MockMvc;
 import pl.kurs.librarybooks.model.Book;
 import pl.kurs.librarybooks.repository.BookRepository;
+
+import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,20 +23,32 @@ public class BookRepositoryTest {
     @Autowired
     private BookRepository bookRepository;
 
+    @AfterEach
+    void tearDown(){
+        bookRepository.deleteAll();
+    }
+
     @Test
     void shouldCheckIfBookByIdExist(){
-        Book givenBook = new Book(1L,"Title", "Author", null, false, null);
+        Book givenBook = new Book(null,"Title", "Author", null, false, null);
 
         bookRepository.save(givenBook);
 
-        boolean exists = bookRepository.existsBookById(1L);
+        boolean exists = bookRepository.existsBookById(givenBook.getId());
 
         assertTrue(exists);
     }
 
     @Test
+    void shouldCheckIfBookByIdNotExist(){
+        boolean exists = bookRepository.existsBookById(1L);
+
+        assertFalse(exists);
+    }
+
+    @Test
     void shouldCheckIfBookIsBorrowed(){
-        Book givenBook = new Book(1L,"Title", "Author", null, true, null);
+        Book givenBook = new Book(null,"Title", "Author", 1L, true, LocalDate.now());
 
         bookRepository.save(givenBook);
 
@@ -42,24 +57,15 @@ public class BookRepositoryTest {
         assertTrue(bookBorrowed);
     }
 
-
     @Test
-    void shouldAddBook(){
-        //given
-        Book givenBook = new Book(null, "Title", "Author", null, false, null);
-        //when
-        Book addedBook = bookRepository.save(givenBook);
+    void shouldCheckIfBookIsNotBorrowed(){
+        Book givenBook = new Book(null,"Title", "Author", null, false, null);
 
-        //then
-        assertAll(
-                () -> assertEquals(addedBook.getId(), givenBook.getId()),
-                () -> assertEquals(addedBook.getTitle(), givenBook.getTitle()),
-                () -> assertEquals(addedBook.getAuthor(), givenBook.getAuthor()),
-                () -> assertEquals(addedBook.getStudentId(), givenBook.getStudentId()),
-                () -> assertEquals(addedBook.isBorrowed(), givenBook.isBorrowed()),
-                () -> assertEquals(addedBook.getBorrowDate(), givenBook.getBorrowDate())
-        );
+        bookRepository.save(givenBook);
+
+        boolean bookBorrowed = bookRepository.isBookBorrowed(givenBook.getId());
+
+        assertFalse(bookBorrowed);
     }
-
 
 }

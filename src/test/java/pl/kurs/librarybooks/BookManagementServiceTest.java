@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.stereotype.Service;
+import pl.kurs.librarybooks.exceptions.InvalidEntityException;
 import pl.kurs.librarybooks.model.Book;
 import pl.kurs.librarybooks.repository.BookRepository;
 import pl.kurs.librarybooks.service.BookManagementService;
@@ -14,23 +15,45 @@ import pl.kurs.librarybooks.service.BookManagementService;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 public class BookManagementServiceTest {
     @Autowired
     private BookManagementService bookManagementService;
+    @Autowired
+    private BookRepository bookRepository;
 
     @Test
     void shouldGetBorrowedDays(){
         Book givenBook = new Book(null, "Title", "Author", 1L, true, LocalDate.now().minusDays(5));
-
         bookManagementService.add(givenBook);
 
         int borrowedDays = bookManagementService.getBorrowedDays(givenBook.getId());
 
         assertEquals(5, borrowedDays);
+    }
+
+    @Test
+    void shouldAddBook(){
+        Book givenBook = new Book(null, "Title", "Author", null, false, null);
+
+        Book addedBook = bookManagementService.add(givenBook);
+
+        assertEquals(addedBook, givenBook);
+    }
+
+    @Test
+    void shouldDeleteBook(){
+        Book givenBook = new Book(null, "Title", "Author", null, false, null);
+        Book addedBook = bookManagementService.add(givenBook);
+
+        bookManagementService.delete(addedBook.getId());
+
+
+        verify(bookRepository, times(1)).deleteById(addedBook.getId());
     }
 
 

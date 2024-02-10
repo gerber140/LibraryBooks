@@ -35,7 +35,8 @@ public class BookControllerService {
             OverdueBookDTO response = modelMapper.map(bookManagementService.get(id), OverdueBookDTO.class);
             response.setOverdue("Book is overdue by " + (bookManagementService.getBorrowedDays(id) - 14) + " days");
             return response;
-        } else return modelMapper.map(bookManagementService.get(id), GetBookDTO.class);
+        } else
+            return modelMapper.map(bookManagementService.get(id), GetBookDTO.class);
     }
 
     public List<GetBookDTO> getBooks(int page, int size, String value) {
