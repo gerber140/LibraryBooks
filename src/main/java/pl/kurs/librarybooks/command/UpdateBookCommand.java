@@ -16,7 +16,7 @@ public class UpdateBookCommand {
     private String author;
 
     private Long studentId;
-    @NotBlank
+    @NotNull
     private boolean isBorrowed;
 
     private LocalDate borrowDate;

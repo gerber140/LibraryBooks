@@ -1,8 +1,6 @@
 package pl.kurs.librarybooks.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.AllArgsConstructor;
@@ -51,7 +49,7 @@ public class BookController {
         return ResponseEntity.ok(bookControllerService.getBooks(pageNo, pageSize, value));
     }
 
-    @GetMapping("/getBook/{id}")
+    @GetMapping("/get/{id}")
     @Operation(summary = "endpoint to get book by id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Book found successfully"),
@@ -61,7 +59,7 @@ public class BookController {
         return ResponseEntity.ok(bookControllerService.getBook(id));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "endpoint to delete Book")
     @ApiResponses(value = {
@@ -70,20 +68,17 @@ public class BookController {
             @ApiResponse(responseCode = "404", description = "Cannot create the book")
     })
     public ResponseEntity<StatusDTO> deleteBookById(@PathVariable("id") long id) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(bookControllerService.deleteBook(id));
+        return bookControllerService.deleteBook(id);
     }
 
-    @PutMapping("/borrowBook/{id_b}/toStudent/{id_s}")
+    @PutMapping("/book/{id_b}/student/{id_s}")
     @Operation(summary = "endpoint to borrow Book to a student")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Book borrowed successfully"),
             @ApiResponse(responseCode = "404", description = "Cannot borrow the book")
     })
     public ResponseEntity<StatusDTO> borrowBook(@PathVariable("id_b") long idBook, @PathVariable("id_s") long idStudent) {
-        if (!bookControllerService.isBookBorrowed(idBook)) {
-            return ResponseEntity.ok(bookControllerService.borrowBook(idBook, idStudent));
-        } else
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new StatusDTO("The book with id:" + idBook + " is already borrowed"));
+        return bookControllerService.borrowBook(idBook, idStudent);
     }
 
 
