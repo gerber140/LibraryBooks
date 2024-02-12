@@ -22,30 +22,27 @@ import java.util.List;
 public class BookControllerService {
     private BookManagementService bookManagementService;
     private ModelMapper modelMapper;
+    private static final int OVERDUE_DAYS = 14;
 
     public BookDTO addBook(CreateBookCommand command) {
-        Book bookForSave = modelMapper.map(command, Book.class);
-        bookForSave.setBorrowed(false);
-        bookForSave = bookManagementService.add(bookForSave);
-        return modelMapper.map(bookForSave, BookDTO.class);
+        return modelMapper.map(bookManagementService.add(modelMapper.map(command, Book.class)), BookDTO.class);
     }
 
     public GetBookDTO getBook(long id) {
-        if(bookManagementService.getBorrowedDays(id) >= 14){
+        if(bookManagementService.getBorrowedDays(id) >= OVERDUE_DAYS){
             OverdueBookDTO response = modelMapper.map(bookManagementService.get(id), OverdueBookDTO.class);
-            response.setOverdue("Book is overdue by " + (bookManagementService.getBorrowedDays(id) - 14) + " days");
+            response.setOverdue("Book is overdue by " + (bookManagementService.getBorrowedDays(id) - OVERDUE_DAYS) + " days");
             return response;
         } else
             return modelMapper.map(bookManagementService.get(id), GetBookDTO.class);
     }
 
     public List<GetBookDTO> getBooks(int page, int size, String value) {
-        Page<Book> booksPage = bookManagementService.getAll(page, size, value);
-        List<Book> booksList = booksPage.getContent();
-
-        return booksList.stream().map(
-                x -> getBook(x.getId())
-        ).toList();
+        return bookManagementService.getAll(page, size, value)
+                .getContent()
+                .stream()
+                .map(x -> getBook(x.getId()))
+                .toList();
     }
 
     public GetBookDTO updateBook(UpdateBookCommand command) {

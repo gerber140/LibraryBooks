@@ -36,8 +36,7 @@ public class Book implements Serializable, Identificationable {
     @Column(nullable = true)
     private Long studentId;
 
-    @Column
-    private boolean isBorrowed;
+    private boolean isBorrowed = false;
 
     @Column(nullable = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")

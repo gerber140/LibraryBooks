@@ -16,10 +16,8 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 public class BookRepositoryTest {
-    @Autowired
-    MockMvc mockMvc;
+
     @Autowired
     private BookRepository bookRepository;
 
@@ -30,41 +28,45 @@ public class BookRepositoryTest {
 
     @Test
     void shouldCheckIfBookByIdExist(){
+        //given
         Book givenBook = new Book(null,"Title", "Author", null, false, null);
-
+        //when
         bookRepository.save(givenBook);
 
         boolean exists = bookRepository.existsBookById(givenBook.getId());
-
+        //then
         assertTrue(exists);
     }
 
     @Test
     void shouldCheckIfBookByIdNotExist(){
+        //when
         boolean exists = bookRepository.existsBookById(1L);
-
+        //then
         assertFalse(exists);
     }
 
     @Test
     void shouldCheckIfBookIsBorrowed(){
+        //given
         Book givenBook = new Book(null,"Title", "Author", 1L, true, LocalDate.now());
-
+        //when
         bookRepository.save(givenBook);
 
         boolean bookBorrowed = bookRepository.isBookBorrowed(givenBook.getId());
-
+        //then
         assertTrue(bookBorrowed);
     }
 
     @Test
     void shouldCheckIfBookIsNotBorrowed(){
+        //given
         Book givenBook = new Book(null,"Title", "Author", null, false, null);
-
+        //when
         bookRepository.save(givenBook);
 
         boolean bookBorrowed = bookRepository.isBookBorrowed(givenBook.getId());
-
+        //then
         assertFalse(bookBorrowed);
     }
 
