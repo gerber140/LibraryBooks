@@ -65,8 +65,8 @@ public class BookControllerService {
             bookToBorrow.setStudentId(idStudent);
             bookToBorrow.setBorrowDate(LocalDate.now());
             bookManagementService.edit(bookToBorrow);
-            return ResponseEntity.ok(new StatusDTO("The book with id:" + idBook + " was borrowed to a student with id:" + idStudent));
+            return ResponseEntity.ok(new StatusDTO("The book with id: " + idBook + " was borrowed to a student with id: " + idStudent));
         } else
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new StatusDTO("The book with id:" + idBook + " is already borrowed"));
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(new StatusDTO("The book with id: " + idBook + " is already borrowed"));
     }
 }

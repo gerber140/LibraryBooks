@@ -35,24 +35,24 @@ public abstract class GenericManagementService<T extends Identificationable, R e
     }
 
     @Override
-    public T edit(T entity) {
-        entity = Optional.ofNullable(entity)
-                .filter(x -> Objects.nonNull(x.getId()))
-                .orElseThrow(() -> new InvalidEntityException("Invalid entity for update"));
-        return repository.save(entity);
+    public Page<T> getAll(int pageNumber, int pageSize, String value) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(value));
+        return repository.findAll(pageable);
     }
 
     @Override
     public void delete(Long id) {
         repository.deleteById(Optional.ofNullable(id)
                 .filter(x -> x > 0)
-                .orElseThrow(() -> new InvalidIdException("Invalid id:" + id)));
+                .orElseThrow(() -> new InvalidIdException("Invalid id: " + id)));
     }
 
     @Override
-    public Page<T> getAll(int pageNumber, int pageSize, String value) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(value));
-        return repository.findAll(pageable);
+    public T edit(T entity) {
+        entity = Optional.ofNullable(entity)
+                .filter(x -> Objects.nonNull(x.getId()))
+                .orElseThrow(() -> new InvalidEntityException("Invalid entity for update"));
+        return repository.save(entity);
     }
 
 }

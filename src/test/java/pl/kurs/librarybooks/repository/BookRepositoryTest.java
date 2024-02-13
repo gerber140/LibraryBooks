@@ -1,4 +1,4 @@
-package pl.kurs.librarybooks;
+package pl.kurs.librarybooks.repository;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
