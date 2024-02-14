@@ -45,17 +45,17 @@ public class BookControllerService {
                 .toList();
     }
 
-    public GetBookDTO updateBook(UpdateBookCommand command) {
-        Book bookForUpdate = modelMapper.map(command, Book.class);
-        bookForUpdate = bookManagementService.edit(bookForUpdate);
-        return modelMapper.map(bookForUpdate, GetBookDTO.class);
-    }
-
     public ResponseEntity<StatusDTO> deleteBook(long id) {
         if (bookManagementService.doesBookExist(id)) {
             bookManagementService.delete(id);
             return ResponseEntity.ok(new StatusDTO("Deleted id:" + id));
         } else return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new StatusDTO("Book by given id not found"));
+    }
+
+    public GetBookDTO updateBook(UpdateBookCommand command) {
+        Book bookForUpdate = modelMapper.map(command, Book.class);
+        bookForUpdate = bookManagementService.edit(bookForUpdate);
+        return modelMapper.map(bookForUpdate, GetBookDTO.class);
     }
 
     public ResponseEntity<StatusDTO> borrowBook(long idBook, long idStudent) {

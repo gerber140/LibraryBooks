@@ -6,9 +6,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.kurs.librarybooks.command.CreateBookCommand;
+import pl.kurs.librarybooks.command.UpdateBookCommand;
 import pl.kurs.librarybooks.dto.BookDTO;
 import pl.kurs.librarybooks.dto.GetBookDTO;
 import pl.kurs.librarybooks.dto.OverdueBookDTO;
@@ -16,8 +19,12 @@ import pl.kurs.librarybooks.dto.StatusDTO;
 import pl.kurs.librarybooks.model.Book;
 
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,7 +42,9 @@ class BookControllerServiceTest {
     void shouldAddBookAndReturnBookDTO() {
         // given
         CreateBookCommand command = new CreateBookCommand("Title", "Author");
+
         Book createdBook = new Book(1L, "Title", "Author", null, false, null);
+
         BookDTO expectedDTO = new BookDTO(1L, "Title", "Author");
 
         // when
@@ -57,8 +66,8 @@ class BookControllerServiceTest {
         Book returnedBook = new Book(bookId, "Title", "Author", null, false, null);
 
         // when
-        when(bookManagementService.getBorrowedDays(bookId)).thenReturn(0);
         when(bookManagementService.get(bookId)).thenReturn(returnedBook);
+        when(bookManagementService.getBorrowedDays(bookId)).thenReturn(0);
         when(modelMapper.map(returnedBook, GetBookDTO.class)).thenReturn(expectedDTO);
 
         // then
@@ -86,6 +95,38 @@ class BookControllerServiceTest {
         assertThat(resultDTO).isEqualTo(expectedDTO);
     }
     @Test
+    void getBooks() {
+        // given
+        int page = 1;
+        int size = 10;
+        String value = "id";
+
+        List<Book> books = Arrays.asList(
+                new Book(1L, "Title1", "Author1", null, false, null),
+                new Book(2L, "Title2", "Author2", 1L, true, LocalDate.now().minusDays(16))
+        );
+
+        List<GetBookDTO> expectedDTOs = books.stream()
+                .map(book -> {
+                    if (book.isBorrowed() && book.getBorrowDate().plusDays(14).isBefore(LocalDate.now())) {
+                        return modelMapper.map(book, OverdueBookDTO.class);
+                    } else {
+                        return modelMapper.map(book, GetBookDTO.class);
+                    }
+                })
+                .collect(Collectors.toList());
+
+        // when
+        when(bookManagementService.getAll(page, size, value)).thenReturn(new PageImpl<>(books));
+
+        List<GetBookDTO> resultDTOs = bookControllerService.getBooks(page, size, value);
+
+        // then
+        assertThat(resultDTOs).isEqualTo(expectedDTOs);
+
+    }
+
+    @Test
     void shouldDeleteBookAndReturnOk() {
         // given
         long bookId = 1L;
@@ -98,11 +139,6 @@ class BookControllerServiceTest {
         // then
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(responseEntity.getBody().getStatus()).isEqualTo("Deleted id:" + bookId);
-    }
-
-    @Test
-    void getBooks() {
-
     }
 
     @Test
@@ -121,7 +157,33 @@ class BookControllerServiceTest {
     }
 
     @Test
-    void updateBook() {
+    void shouldUpdateBook() {
+        // given
+        UpdateBookCommand updateCommand = new UpdateBookCommand();
+        updateCommand.setId(1L);
+        updateCommand.setTitle("Updated Title");
+        updateCommand.setAuthor("Updated Author");
+        updateCommand.setStudentId(3L);
+        updateCommand.setBorrowed(true);
+        updateCommand.setBorrowDate(LocalDate.now());
+
+        Book bookToUpdate = new Book(1L, "Old Title", "Old Author", null, false, null);
+        GetBookDTO updatedBookDTO = new GetBookDTO(1L, "Updated Title", "Updated Author", 3L, true, LocalDate.now());
+
+        // when
+        when(modelMapper.map(updateCommand, Book.class)).thenReturn(bookToUpdate);
+        when(bookManagementService.edit(bookToUpdate)).thenReturn(bookToUpdate);
+        when(modelMapper.map(bookToUpdate, GetBookDTO.class)).thenReturn(updatedBookDTO);
+
+        GetBookDTO result = bookControllerService.updateBook(updateCommand);
+
+        // then
+        assertEquals(updatedBookDTO, result);
+
+        verify(modelMapper, times(1)).map(updateCommand, Book.class);
+        verify(bookManagementService, times(1)).edit(bookToUpdate);
+        verify(modelMapper, times(1)).map(bookToUpdate, GetBookDTO.class);
+
     }
 
     @Test

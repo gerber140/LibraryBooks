@@ -1,5 +1,6 @@
 package pl.kurs.librarybooks.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.springframework.data.domain.Page;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,39 +33,46 @@ public class BookManagementServiceTest {
 
 
     @Test
-    void shouldGetBorrowedDays(){
+    void shouldGetBorrowedDays() {
         // given
-        Book borrowedBook = new Book(1L, "Title", "Author", 1L, true, LocalDate.now().minusDays(5));
-
-        when(bookRepository.findById(borrowedBook.getId())).thenReturn(Optional.of(borrowedBook));
+        long bookId = 1L;
+        Book borrowedBook = new Book(bookId, "Title", "Author", 1L, true, LocalDate.now().minusDays(5));
 
         // when
-        int borrowedDays = bookManagementService.getBorrowedDays(borrowedBook.getId());
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(borrowedBook));
+
+        int borrowedDays = bookManagementService.getBorrowedDays(bookId);
 
         // then
         assertThat(borrowedDays).isEqualTo(5);
     }
+
     @Test
     void shouldReturnZeroForNotBorrowedBook() {
         // given
+        long bookId = 2L;
         Book notBorrowedBook = new Book(2L, "Title", "Author", null, false, null);
 
-        when(bookRepository.findById(notBorrowedBook.getId())).thenReturn(Optional.of(notBorrowedBook));
-
         // when
-        int borrowedDays = bookManagementService.getBorrowedDays(notBorrowedBook.getId());
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(notBorrowedBook));
+
+        int borrowedDays = bookManagementService.getBorrowedDays(bookId);
 
         // then
         assertThat(borrowedDays).isEqualTo(0);
     }
+
     @Test
-    void shouldAddBook(){
+    void shouldAddBook() {
+        // given
         Book givenBook = new Book(null, "Title", "Author", null, false, null);
 
+        // when
         when(bookRepository.save(givenBook)).thenReturn(givenBook);
 
         Book added = bookManagementService.add(givenBook);
 
+        // then
         assertThat(added).isEqualTo(givenBook);
     }
 
@@ -74,13 +84,14 @@ public class BookManagementServiceTest {
     }
 
     @Test
-    void shouldGetBook(){
+    void shouldGetBook() {
         //given
-        Book expectedBook = new Book(1L, "Title", "Author", null, false, null);
+        long bookId = 1L;
+        Book expectedBook = new Book(bookId, "Title", "Author", null, false, null);
         //when
-        when(bookRepository.findById(expectedBook.getId())).thenReturn(Optional.of(expectedBook));
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(expectedBook));
 
-        Book retrievedBook = bookManagementService.get(expectedBook.getId());
+        Book retrievedBook = bookManagementService.get(bookId);
         //then
         assertThat(retrievedBook).isEqualTo(expectedBook);
     }
@@ -107,33 +118,43 @@ public class BookManagementServiceTest {
     }
 
     @Test
-    void shouldGetAllBooks(){
+    void shouldGetAllBooks() {
         // given
+        int pageNumber = 0;
+        int pageSize = 10;
+        String value = "id";
+
         List<Book> bookList = List.of(
                 new Book(1L, "Title1", "Author1", null, false, null),
-                new Book(2L, "Title2", "Author2", null, false, null));
+                new Book(2L, "Title2", "Author2", null, false, null),
+                new Book(3L, "Title3", "Author3", 1L, true, LocalDate.now())
+        );
 
         Page<Book> expectedPage = new PageImpl<>(bookList);
 
         // when
         when(bookRepository.findAll(any(Pageable.class))).thenReturn(expectedPage);
 
-        Page<Book> resultPage = bookManagementService.getAll(0, 10, "id");
+        Page<Book> resultPage = bookManagementService.getAll(pageNumber, pageSize, value);
 
         // then
         assertThat(resultPage).isEqualTo(expectedPage);
     }
 
     @Test
-    void shouldDeleteBook(){
+    void shouldDeleteBook() {
         // given
         Long bookId = 1L;
 
         // when
         bookManagementService.delete(bookId);
 
+        ArgumentCaptor<Long> idCaptor = ArgumentCaptor.forClass(Long.class);
+        verify(bookRepository).deleteById(idCaptor.capture());
+
         // then
-        verify(bookRepository).deleteById(bookId);
+        assertEquals(bookId, idCaptor.getValue());
+
     }
 
     @Test
@@ -144,7 +165,7 @@ public class BookManagementServiceTest {
     }
 
     @Test
-    void shouldEditBook(){
+    void shouldEditBook() {
         // given
         Book existingBook = new Book(1L, "Title", "Author", null, false, null);
 
@@ -153,12 +174,17 @@ public class BookManagementServiceTest {
 
         Book editedBook = bookManagementService.edit(existingBook);
 
-        // then
-        assertThat(editedBook).isEqualTo(existingBook);
+        ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
+        verify(bookRepository).save(bookCaptor.capture());
+
+        Book capturedBook = bookCaptor.getValue();
+
+        assertEquals(existingBook, capturedBook);
+        assertEquals(existingBook, editedBook);
     }
 
     @Test
-    void shouldThrowInvalidIdExceptionForNullIdWhileEditBook(){
+    void shouldThrowInvalidIdExceptionForNullIdWhileEditBook() {
         //when + then
         assertThatThrownBy(() -> bookManagementService.edit(null))
                 .isInstanceOf(InvalidEntityException.class)

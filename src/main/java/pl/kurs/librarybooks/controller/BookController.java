@@ -35,6 +35,16 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookControllerService.addBook(command));
     }
 
+    @GetMapping("/get/{id}")
+    @Operation(summary = "endpoint to get book by id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Book found successfully"),
+            @ApiResponse(responseCode = "404", description = "Book not found")
+    })
+    public ResponseEntity<GetBookDTO> getBookById(@PathVariable("id") long id) {
+        return ResponseEntity.ok(bookControllerService.getBook(id));
+    }
+
     @GetMapping("/get")
     @Operation(summary = "endpoint to get books")
     @ApiResponses(value = {
@@ -49,16 +59,6 @@ public class BookController {
         return ResponseEntity.ok(bookControllerService.getBooks(pageNo, pageSize, value));
     }
 
-    @GetMapping("/get/{id}")
-    @Operation(summary = "endpoint to get book by id")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Book found successfully"),
-            @ApiResponse(responseCode = "404", description = "Book not found")
-    })
-    public ResponseEntity<GetBookDTO> getBookById(@PathVariable("id") long id) {
-        return ResponseEntity.ok(bookControllerService.getBook(id));
-    }
-
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "endpoint to delete Book")
@@ -71,17 +71,6 @@ public class BookController {
         return bookControllerService.deleteBook(id);
     }
 
-    @PutMapping("/book/{id_b}/student/{id_s}")
-    @Operation(summary = "endpoint to borrow Book to a student")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Book borrowed successfully"),
-            @ApiResponse(responseCode = "404", description = "Cannot borrow the book")
-    })
-    public ResponseEntity<StatusDTO> borrowBook(@PathVariable("id_b") long idBook, @PathVariable("id_s") long idStudent) {
-        return bookControllerService.borrowBook(idBook, idStudent);
-    }
-
-
     @PutMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "endpoint to update Book")
@@ -92,5 +81,15 @@ public class BookController {
     })
     public ResponseEntity<GetBookDTO> updateBookById(@RequestBody UpdateBookCommand command) {
         return ResponseEntity.ok(bookControllerService.updateBook(command));
+    }
+
+    @PutMapping("/book/{id_b}/student/{id_s}")
+    @Operation(summary = "endpoint to borrow Book to a student")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Book borrowed successfully"),
+            @ApiResponse(responseCode = "404", description = "Cannot borrow the book")
+    })
+    public ResponseEntity<StatusDTO> borrowBook(@PathVariable("id_b") long idBook, @PathVariable("id_s") long idStudent) {
+        return bookControllerService.borrowBook(idBook, idStudent);
     }
 }
